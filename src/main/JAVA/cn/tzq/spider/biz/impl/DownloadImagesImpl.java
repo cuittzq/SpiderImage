@@ -3,17 +3,24 @@ package cn.tzq.spider.biz.impl;
 import cn.tzq.spider.biz.ApplicationContextProvider;
 import cn.tzq.spider.biz.DownloadImages;
 import cn.tzq.spider.biz.ImageDownTask;
+import cn.tzq.spider.model.BeautyGirls;
+import cn.tzq.spider.service.BeautyGirlService;
 import cn.tzq.spider.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * 功能描述：
@@ -25,24 +32,38 @@ import java.util.concurrent.CountDownLatch;
 @Component("downloadImages")
 public class DownloadImagesImpl implements DownloadImages {
 
-    ThreadPoolTaskExecutor taskExecutor;
+    private ThreadPoolTaskExecutor taskExecutor;
+
+    private BeautyGirlService beautyGirlService;
+
+    private Map<String, List<BeautyGirls>> imagemap = new HashMap<>();
 
     @Autowired
-    public DownloadImagesImpl(ThreadPoolTaskExecutor taskExecutor) {
+    public DownloadImagesImpl(ThreadPoolTaskExecutor taskExecutor, BeautyGirlService beautyGirlService) {
         this.taskExecutor = taskExecutor;
+        this.beautyGirlService = beautyGirlService;
+
     }
 
-    /**
-     * 传入要下载的图片的url列表，将url所对应的图片下载到本地
-     *
-     * @param imagemap
-     */
     @Override
-    public void downloadPicture(Map<String, List<String>> imagemap) throws InterruptedException {
+    public void downloadPicture() throws InterruptedException {
+        // 1获取最新的100条数据
+        Page<BeautyGirls> beautyGirlslist = this.beautyGirlService.findbeautygirls(100);
+        // 2按照主题分组
+        beautyGirlslist.forEach((beautgirls) -> {
+            if (!imagemap.containsKey(beautgirls.getImageTheme())) {
+                imagemap.put(beautgirls.getImageTheme(), new ArrayList<>());
+            }
+
+            imagemap.get(beautgirls.getImageTheme()).add(beautgirls);
+        });
+
+        // 3 多线程下载
         final CountDownLatch countDownLatch = new CountDownLatch(imagemap.size());
         imagemap.forEach((key, imagelist) -> {
             try {
-                taskExecutor.execute(new ImageDownTask(key, imagelist, countDownLatch));
+                imagelist = imagelist.stream().distinct().collect(Collectors.toList());
+                taskExecutor.execute(new ImageDownTask(key, imagelist, countDownLatch, beautyGirlService));
             } catch (Exception e) {
                 e.printStackTrace();
             }

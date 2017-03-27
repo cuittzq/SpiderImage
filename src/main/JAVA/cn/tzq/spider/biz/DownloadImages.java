@@ -12,9 +12,7 @@ import java.util.Map;
  **/
 public interface DownloadImages {
     /**
-     * 传入要下载的图片的url列表，将url所对应的图片下载到本地
      *
-     * @param imagemap
      */
-    void downloadPicture(Map<String, List<String>> imagemap) throws InterruptedException;
+    void downloadPicture() throws InterruptedException;
 }

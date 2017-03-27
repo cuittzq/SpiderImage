@@ -50,6 +50,6 @@ public class BeautyGirlDubboServiceImpl implements BeautyGirlDubboService {
      */
     @Override
     public List<BeautyGirls> findByImageTheme(String imageTheme, Integer isdelete, Integer isDownload) {
-        return this.beautyGirlService.findByImageTheme(imageTheme, isdelete, isDownload);
+        return null;
     }
 }

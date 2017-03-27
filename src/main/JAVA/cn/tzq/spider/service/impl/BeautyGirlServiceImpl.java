@@ -38,6 +38,15 @@ public class BeautyGirlServiceImpl implements BeautyGirlService {
     }
 
     /**
+     * @param beautyGirls
+     * @return
+     */
+    @Override
+    public BeautyGirls upDate(BeautyGirls beautyGirls) {
+        return this.beautyGirlRepository.save(beautyGirls);
+    }
+
+    /**
      * @param pageNumber
      * @param pageSize
      * @return
@@ -62,15 +71,10 @@ public class BeautyGirlServiceImpl implements BeautyGirlService {
         return deptPageInfo;
     }
 
-    /**
-     * @param imageTheme
-     * @param isdelete
-     * @param isDownload
-     * @return
-     */
     @Override
-    public List<BeautyGirls> findByImageTheme(String imageTheme, Integer isdelete, Integer isDownload) {
-        return null;//this.beautyGirlRepository.findByImageTheme(imageTheme, isdelete, isDownload);
+    public Page<BeautyGirls> findbeautygirls(Integer pageSize) {
+        Pageable var1 = buildPageRequest(1, pageSize);
+        return this.beautyGirlRepository.findbeautygirls(var1);
     }
 
     /**

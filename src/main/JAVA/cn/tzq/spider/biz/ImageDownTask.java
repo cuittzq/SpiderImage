@@ -1,6 +1,9 @@
 package cn.tzq.spider.biz;
 
+import cn.tzq.spider.model.BeautyGirls;
+import cn.tzq.spider.service.BeautyGirlService;
 import cn.tzq.spider.util.FileUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -23,7 +26,7 @@ import java.util.concurrent.CountDownLatch;
 @Scope("prototype")
 public class ImageDownTask implements Runnable {
 
-    private List<String> imageList;
+    private List<BeautyGirls> imageList;
 
     private String imageTheme;
 
@@ -31,16 +34,19 @@ public class ImageDownTask implements Runnable {
 
     CountDownLatch countDownLatch;
 
+    BeautyGirlService beautyGirlService;
+
     /**
      * 构造函数
      *
      * @param imageTheme 主题
      * @param imageList  图片列表
      */
-    public ImageDownTask(String imageTheme, List<String> imageList, CountDownLatch countDownLatch) {
+    public ImageDownTask(String imageTheme, List<BeautyGirls> imageList, CountDownLatch countDownLatch,BeautyGirlService beautyGirlService) {
         this.imageTheme = imageTheme;
         this.imageList = imageList;
         this.countDownLatch = countDownLatch;
+        this.beautyGirlService = beautyGirlService;
     }
 
     /**
@@ -59,12 +65,14 @@ public class ImageDownTask implements Runnable {
         System.out.printf("%s, 开始！", this.imageTheme);
         this.imageList.forEach((imageurl) -> {
             try {
-                URL url = new URL(imageurl);
+                URL url = new URL(imageurl.getImageUrl());
                 DataInputStream dataInputStream = new DataInputStream(url.openStream());
-                String imagePath = CreateFilePath(this.imageTheme, imageurl);
+                String imagePath = CreateFilePath(this.imageTheme, imageurl.getImageUrl());
                 // 保存文件
                 FileUtil.writeFileFromInputStream(dataInputStream, imagePath);
                 dataInputStream.close();
+                imageurl.setDownload(1);
+                this.beautyGirlService.upDate(imageurl);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {

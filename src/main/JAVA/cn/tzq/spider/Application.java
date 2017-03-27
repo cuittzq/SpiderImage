@@ -20,16 +20,8 @@ public class Application extends SpringBootServletInitializer {
     public static void main(String[] args) {
         ApplicationContext ctx = SpringApplication.run(Application.class);
         DownloadImages downloadImages = (DownloadImages) ctx.getBean("downloadImages");
-        Map<String, List<String>> imagemap = new HashMap<>();
-        for (int i = 0; i < 10; i++) {
-            String key = String.format("桌面壁纸%d", i);
-            imagemap.put(key, new ArrayList<>());
-            for (int j = 1; j < 12; j++) {
-                imagemap.get(key).add(String.format("http://tupian.enterdesk.com/2012/0608/gha/7/%d.jpg", j));
-            }
-        }
         try {
-            downloadImages.downloadPicture(imagemap);
+            downloadImages.downloadPicture();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

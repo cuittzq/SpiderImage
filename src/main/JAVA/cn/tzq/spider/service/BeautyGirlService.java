@@ -2,6 +2,7 @@ package cn.tzq.spider.service;
 
 import cn.tzq.spider.model.BeautyGirls;
 import com.github.pagehelper.PageInfo;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -17,18 +18,15 @@ public interface BeautyGirlService {
     BeautyGirls findOne(Integer id);
 
     /**
+     * @return
+     */
+    BeautyGirls upDate(BeautyGirls beautyGirls);
+    /**
      * @param pageNumber
      * @param pageSize
      * @return
      */
     PageInfo<BeautyGirls> findbyPage(Integer pageNumber, Integer pageSize);
 
-    /**
-     *
-     * @param imageTheme
-     * @param isdelete
-     * @param isDownload
-     * @return
-     */
-    List<BeautyGirls> findByImageTheme(String imageTheme, Integer isdelete, Integer isDownload);
+    Page<BeautyGirls> findbeautygirls(Integer top);
 }
