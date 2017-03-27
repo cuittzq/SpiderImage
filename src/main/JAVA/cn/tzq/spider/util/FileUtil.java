@@ -52,8 +52,8 @@ public class FileUtil {
             data = null;
         } catch (Exception e) {
             result = false;
-            // LogUtil.e(TAG, e.getMessage());
         }
+
         return result;
     }
 
