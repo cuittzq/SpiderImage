@@ -3,7 +3,7 @@ server:
   port: 8098
 spring:
   datasource:
-    url: jdbc:mysql://192.168.10.5:3306/SpiderDB?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+    url: jdbc:mysql://localhost:3306/SpiderDB?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
     username: root
     password: 123456
 #    driver-class: org.postgresql.Driver
@@ -13,11 +13,11 @@ spring:
       properties:
         dialect: org.hibernate.dialect.MySQL5Dialect
 #        dialect: org.hibernate.dialect.PostgreSQLDialect
-  #      dialect: org.hibernate.dialect.Oracle10gDialect
-      hibernate:
+#        dialect: org.hibernate.dialect.Oracle10gDialect
         naming:
-          strategy: org.hibernate.cfg.DefaultNamingStrategy
+          strategy: org.hibernate.cfg.ImprovedNamingStrategy
 #          strategy: org.hibernate.cfg.ImprovedNamingStrategy
+
   redis:
       host: 192.168.10.5
       port: 6379
