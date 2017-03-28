@@ -50,13 +50,15 @@ public class DownloadImagesImpl implements DownloadImages {
         // 1获取最新的100条数据
         Page<BeautyGirls> beautyGirlslist = this.beautyGirlService.findbeautygirls(100);
         // 2按照主题分组
-        beautyGirlslist.forEach((beautgirls) -> {
-            if (!imagemap.containsKey(beautgirls.getImageTheme())) {
-                imagemap.put(beautgirls.getImageTheme(), new ArrayList<>());
-            }
+//        beautyGirlslist.forEach((beautgirls) -> {
+//            if (!imagemap.containsKey(beautgirls.getImageTheme())) {
+//                imagemap.put(beautgirls.getImageTheme(), new ArrayList<>());
+//            }
+//
+//            imagemap.get(beautgirls.getImageTheme()).add(beautgirls);
+//        });
 
-            imagemap.get(beautgirls.getImageTheme()).add(beautgirls);
-        });
+        imagemap = beautyGirlslist.getContent().stream().distinct().collect(Collectors.groupingBy(BeautyGirls::getImageTheme));
 
         // 3 多线程下载
         final CountDownLatch countDownLatch = new CountDownLatch(imagemap.size());
