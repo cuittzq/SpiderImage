@@ -1,8 +1,11 @@
 package cn.tzq.spider.biz;
 
 import cn.tzq.spider.model.BeautyGirls;
+import cn.tzq.spider.proxypool.HttpProxy;
+import cn.tzq.spider.proxypool.ProxyPool;
 import cn.tzq.spider.service.BeautyGirlService;
 import cn.tzq.spider.util.FileUtil;
+import cn.tzq.spider.util.RedisTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -11,7 +14,9 @@ import org.springframework.stereotype.Component;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -30,11 +35,15 @@ public class ImageDownTask implements Runnable {
 
     private String imageTheme;
 
+    private ProxyPool proxyPool;
+
     final String rootPath = "D:/Images";
 
     CountDownLatch countDownLatch;
 
     BeautyGirlService beautyGirlService;
+
+    RedisTemplateUtils redisTemplateUtils;
 
     /**
      * 构造函数
@@ -42,11 +51,14 @@ public class ImageDownTask implements Runnable {
      * @param imageTheme 主题
      * @param imageList  图片列表
      */
-    public ImageDownTask(String imageTheme, List<BeautyGirls> imageList, CountDownLatch countDownLatch,BeautyGirlService beautyGirlService) {
+    public ImageDownTask(String imageTheme, List<BeautyGirls> imageList, CountDownLatch countDownLatch,
+                         BeautyGirlService beautyGirlService, ProxyPool proxyPool,RedisTemplateUtils redisTemplateUtils) {
         this.imageTheme = imageTheme;
         this.imageList = imageList;
         this.countDownLatch = countDownLatch;
         this.beautyGirlService = beautyGirlService;
+        this.proxyPool = proxyPool;
+        this.redisTemplateUtils = redisTemplateUtils;
     }
 
     /**
@@ -65,8 +77,13 @@ public class ImageDownTask implements Runnable {
         System.out.printf("%s, 开始！", this.imageTheme);
         this.imageList.forEach((imageurl) -> {
             try {
+                // 初始化proxy对象
+                HttpProxy httpproxy = this.proxyPool.borrow();
+
                 URL url = new URL(imageurl.getImageUrl());
-                DataInputStream dataInputStream = new DataInputStream(url.openStream());
+                URLConnection conn = url.openConnection(httpproxy.getProxy());
+                DataInputStream dataInputStream = new DataInputStream(conn.getInputStream());
+
                 String imagePath = CreateFilePath(this.imageTheme, imageurl.getImageUrl());
                 // 保存文件
                 FileUtil.writeFileFromInputStream(dataInputStream, imagePath);

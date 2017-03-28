@@ -4,8 +4,10 @@ import cn.tzq.spider.biz.ApplicationContextProvider;
 import cn.tzq.spider.biz.DownloadImages;
 import cn.tzq.spider.biz.ImageDownTask;
 import cn.tzq.spider.model.BeautyGirls;
+import cn.tzq.spider.proxypool.ProxyPool;
 import cn.tzq.spider.service.BeautyGirlService;
 import cn.tzq.spider.util.FileUtil;
+import cn.tzq.spider.util.RedisTemplateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -36,12 +38,18 @@ public class DownloadImagesImpl implements DownloadImages {
 
     private BeautyGirlService beautyGirlService;
 
+    private ProxyPool proxyPool;
+
+    private RedisTemplateUtils redisTemplateUtils;
+
     private Map<String, List<BeautyGirls>> imagemap = new HashMap<>();
 
     @Autowired
-    public DownloadImagesImpl(ThreadPoolTaskExecutor taskExecutor, BeautyGirlService beautyGirlService) {
+    public DownloadImagesImpl(ThreadPoolTaskExecutor taskExecutor, BeautyGirlService beautyGirlService, RedisTemplateUtils redisTemplateUtils, ProxyPool proxyPool) {
         this.taskExecutor = taskExecutor;
         this.beautyGirlService = beautyGirlService;
+        this.redisTemplateUtils = redisTemplateUtils;
+        this.proxyPool = proxyPool;
 
     }
 
@@ -63,7 +71,7 @@ public class DownloadImagesImpl implements DownloadImages {
         imagemap.forEach((key, imagelist) -> {
             try {
                 imagelist = imagelist.stream().distinct().collect(Collectors.toList());
-                taskExecutor.execute(new ImageDownTask(key, imagelist, countDownLatch, beautyGirlService));
+                taskExecutor.execute(new ImageDownTask(key, imagelist, countDownLatch, beautyGirlService, this.proxyPool, this.redisTemplateUtils));
             } catch (Exception e) {
                 e.printStackTrace();
             }
