@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
  **/
 @Component("downloadImages")
 public class DownloadImagesImpl implements DownloadImages {
+    private Map<String, List<BeautyGirls>> imagemap = new HashMap<>();
 
     private ThreadPoolTaskExecutor taskExecutor;
 
@@ -42,15 +43,15 @@ public class DownloadImagesImpl implements DownloadImages {
 
     private RedisTemplateUtils redisTemplateUtils;
 
-    private Map<String, List<BeautyGirls>> imagemap = new HashMap<>();
+    private ApplicationContextProvider applicationContextProvider;
 
     @Autowired
-    public DownloadImagesImpl(ThreadPoolTaskExecutor taskExecutor, BeautyGirlService beautyGirlService, RedisTemplateUtils redisTemplateUtils, ProxyPool proxyPool) {
+    public DownloadImagesImpl(ThreadPoolTaskExecutor taskExecutor, BeautyGirlService beautyGirlService, RedisTemplateUtils redisTemplateUtils, ProxyPool proxyPool, ApplicationContextProvider applicationContextProvider) {
         this.taskExecutor = taskExecutor;
         this.beautyGirlService = beautyGirlService;
         this.redisTemplateUtils = redisTemplateUtils;
         this.proxyPool = proxyPool;
-
+        this.applicationContextProvider = applicationContextProvider;
     }
 
     @Override
@@ -58,22 +59,18 @@ public class DownloadImagesImpl implements DownloadImages {
         // 1获取最新的100条数据
         Page<BeautyGirls> beautyGirlslist = this.beautyGirlService.findbeautygirls(100);
         // 2按照主题分组
-//        beautyGirlslist.forEach((beautgirls) -> {
-//            if (!imagemap.containsKey(beautgirls.getImageTheme())) {
-//                imagemap.put(beautgirls.getImageTheme(), new ArrayList<>());
-//            }
-//
-//            imagemap.get(beautgirls.getImageTheme()).add(beautgirls);
-//        });
-
         imagemap = beautyGirlslist.getContent().stream().distinct().collect(Collectors.groupingBy(BeautyGirls::getImageTheme));
-
         // 3 多线程下载
         final CountDownLatch countDownLatch = new CountDownLatch(imagemap.size());
         imagemap.forEach((key, imagelist) -> {
             try {
                 imagelist = imagelist.stream().distinct().collect(Collectors.toList());
-                taskExecutor.execute(new ImageDownTask(key, imagelist, countDownLatch, beautyGirlService, this.proxyPool, this.redisTemplateUtils));
+                ImageDownTask tmageDownTask = applicationContextProvider.getBean(ImageDownTask.class);
+                tmageDownTask.setImageList(imagelist);
+                tmageDownTask.setCountDownLatch(countDownLatch);
+                tmageDownTask.setImageTheme(key);
+//                new ImageDownTask(key, imagelist, countDownLatch, beautyGirlService, this.proxyPool, this.redisTemplateUtils)
+                taskExecutor.execute(tmageDownTask);
             } catch (Exception e) {
                 e.printStackTrace();
             }

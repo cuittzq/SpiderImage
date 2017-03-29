@@ -6,6 +6,8 @@ import cn.tzq.spider.proxypool.ProxyPool;
 import cn.tzq.spider.service.BeautyGirlService;
 import cn.tzq.spider.util.FileUtil;
 import cn.tzq.spider.util.RedisTemplateUtils;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -14,7 +16,6 @@ import org.springframework.stereotype.Component;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
@@ -27,23 +28,26 @@ import java.util.concurrent.CountDownLatch;
  * @mail tanzhiqiang@simpletour.com
  * @create 2017-03-27 16:07
  **/
+
 @Component("imageDownTask")
 @Scope("prototype")
+@Getter
+@Setter
 public class ImageDownTask implements Runnable {
 
     private List<BeautyGirls> imageList;
 
     private String imageTheme;
 
-    private ProxyPool proxyPool;
-
     final String rootPath = "D:/Images";
 
-    CountDownLatch countDownLatch;
+    private CountDownLatch countDownLatch;
 
-    BeautyGirlService beautyGirlService;
+    private BeautyGirlService beautyGirlService;
 
-    RedisTemplateUtils redisTemplateUtils;
+    private RedisTemplateUtils redisTemplateUtils;
+
+    private ProxyPool proxyPool;
 
     /**
      * 构造函数
@@ -51,11 +55,11 @@ public class ImageDownTask implements Runnable {
      * @param imageTheme 主题
      * @param imageList  图片列表
      */
-    public ImageDownTask(String imageTheme, List<BeautyGirls> imageList, CountDownLatch countDownLatch,
-                         BeautyGirlService beautyGirlService, ProxyPool proxyPool,RedisTemplateUtils redisTemplateUtils) {
-        this.imageTheme = imageTheme;
-        this.imageList = imageList;
-        this.countDownLatch = countDownLatch;
+    @Autowired
+    public ImageDownTask(BeautyGirlService beautyGirlService, ProxyPool proxyPool, RedisTemplateUtils redisTemplateUtils) {
+//        this.imageTheme = imageTheme;
+//        this.imageList = imageList;
+//        this.countDownLatch = countDownLatch;
         this.beautyGirlService = beautyGirlService;
         this.proxyPool = proxyPool;
         this.redisTemplateUtils = redisTemplateUtils;

@@ -3,6 +3,7 @@ package cn.tzq.spider.biz;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 /**
  * 功能描述：
@@ -11,6 +12,7 @@ import org.springframework.context.ApplicationContextAware;
  * @mail tanzhiqiang@simpletour.com
  * @create 2017-03-27 16:33
  **/
+@Component
 public class ApplicationContextProvider implements ApplicationContextAware {
 
     private static ApplicationContext context;

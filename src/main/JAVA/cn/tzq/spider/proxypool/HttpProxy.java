@@ -2,6 +2,8 @@ package cn.tzq.spider.proxypool;
 
 
 import cn.tzq.spider.util.IpUtils;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by tzq139 on 2017/3/28.
  */
+@Log4j2
 public class HttpProxy implements Delayed {
     public final static int DEFAULT_REUSE_TIME_INTERVAL = 1500;// ms，从一次请求结束到再次可以请求的默认时间间隔
     public final static int FAIL_REVIVE_TIME_INTERVAL = 2 * 60 * 60 * 1000; //ms,请求失败，重试的时间间隔
@@ -44,7 +47,7 @@ public class HttpProxy implements Delayed {
     public HttpProxy(Proxy proxy, int borrowNum, int failedNum, int reuseTimeInterval) {
         this.localAddr = IpUtils.getLocalAddr(); // 获取当前机器的ip地址
         if (localAddr == null) {
-            //logger.error("cannot get local IP!");
+            log.error("cannot get local IP!");
             System.exit(0);
         }
         this.proxy = proxy;

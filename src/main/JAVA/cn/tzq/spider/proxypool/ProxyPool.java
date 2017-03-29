@@ -3,8 +3,11 @@ package cn.tzq.spider.proxypool;
 
 import cn.tzq.spider.model.ProxyIp;
 import cn.tzq.spider.util.RedisTemplateUtils;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -16,8 +19,8 @@ import java.util.concurrent.DelayQueue;
  * Created by tzq139 on 2017/3/28.
  */
 @Component
+@Log4j2
 public class ProxyPool {
-
 
     private RedisTemplateUtils redisTemplateUtils;
 
@@ -25,15 +28,13 @@ public class ProxyPool {
 
     private Map<String, HttpProxy> totalQueue = new ConcurrentHashMap<String, HttpProxy>(); // 存储所有的Proxy
 
+    @Autowired
     public ProxyPool(RedisTemplateUtils redisTemplateUtils) {
         this.redisTemplateUtils = redisTemplateUtils;
-    }
-
-
-    public void InitProxy() {
+        log.info("初始化代理！");
         List<ProxyIp> proxyIps = this.redisTemplateUtils.range("ProxyIps", 0, 100, ProxyIp.class);
         if (proxyIps != null && proxyIps.size() > 0) {
-            proxyIps.forEach((p) -> add(new HttpProxy(p.getIp(), p.getPort())));
+            proxyIps.forEach((p) -> add(p.getIp(), p.getPort()));
         }
     }
 
@@ -65,9 +66,9 @@ public class ProxyPool {
         HttpProxy httpProxy = null;
         try {
             Long time = System.currentTimeMillis();
+            // 阻塞直到队列中有可用的代理
             httpProxy = idleQueue.take();
             double costTime = (System.currentTimeMillis() - time) / 1000.0;
-
             HttpProxy p = totalQueue.get(httpProxy.getKey());
             p.borrow();
         } catch (InterruptedException e) {
