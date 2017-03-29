@@ -6,6 +6,7 @@ import cn.tzq.spider.proxypool.ProxyPool;
 import cn.tzq.spider.service.BeautyGirlService;
 import cn.tzq.spider.util.FileUtil;
 import cn.tzq.spider.util.RedisTemplateUtils;
+import com.sun.jndi.toolkit.ctx.Continuation;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,13 +82,10 @@ public class ImageDownTask implements Runnable {
         System.out.printf("%s, 开始！", this.imageTheme);
         this.imageList.forEach((imageurl) -> {
             try {
-                // 初始化proxy对象
-                HttpProxy httpproxy = this.proxyPool.borrow();
-
-                URL url = new URL(imageurl.getImageUrl());
-                URLConnection conn = url.openConnection(httpproxy.getProxy());
-                DataInputStream dataInputStream = new DataInputStream(conn.getInputStream());
-
+                DataInputStream dataInputStream = getImageInputStream(imageurl);
+                if (dataInputStream == null) {
+                    return;
+                }
                 String imagePath = CreateFilePath(this.imageTheme, imageurl.getImageUrl());
                 // 保存文件
                 FileUtil.writeFileFromInputStream(dataInputStream, imagePath);
@@ -102,6 +100,32 @@ public class ImageDownTask implements Runnable {
         });
         System.out.printf("%s, 结束！", this.imageTheme);
         this.countDownLatch.countDown();
+    }
+
+    /**
+     * 使用代理下载重试三次
+     * @param beautyGirl
+     * @return
+     * @throws IOException
+     */
+    private DataInputStream getImageInputStream(BeautyGirls beautyGirl) {
+
+        DataInputStream dataInputStream = null;
+        for (int i = 0; i < 3; ) {
+            try {
+                // 初始化proxy对象
+                HttpProxy httpproxy = this.proxyPool.borrow();
+                Long time = System.currentTimeMillis();
+                URL url = new URL(beautyGirl.getImageUrl());
+                URLConnection conn = url.openConnection(httpproxy.getProxy());
+                dataInputStream = new DataInputStream(conn.getInputStream());
+                break;
+            } catch (IOException ex) {
+                i++;
+            }
+        }
+
+        return dataInputStream;
     }
 
     /**

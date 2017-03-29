@@ -53,8 +53,14 @@ public class ProxyPool {
         }
     }
 
-    public void add(String address, int port) {
-        this.add(new HttpProxy(address, port));
+    /**
+     * 添加代理到代理池
+     *
+     * @param ipAddress IP
+     * @param port      端口
+     */
+    public void add(String ipAddress, int port) {
+        this.add(new HttpProxy(ipAddress, port));
     }
 
     /**
@@ -69,6 +75,7 @@ public class ProxyPool {
             // 阻塞直到队列中有可用的代理
             httpProxy = idleQueue.take();
             double costTime = (System.currentTimeMillis() - time) / 1000.0;
+            log.info("从队列中获取有效代理耗时 %.2f", costTime);
             HttpProxy p = totalQueue.get(httpProxy.getKey());
             p.borrow();
         } catch (InterruptedException e) {
@@ -116,7 +123,8 @@ public class ProxyPool {
         }
         if (httpProxy.getSucceedNum() > 5) {
             //持久化到磁盘,提供代理ip服务
-            this.redisTemplateUtils.set("ipproxy", httpProxy, 100L);//连续成功超过 5次，移除代理池队列,存储到redis
+            //连续成功超过 5次，移除代理池队列,存储到redis
+            this.redisTemplateUtils.set("success_proxyip_pool", httpProxy, 100L);
             return;
         }
         try {
@@ -126,14 +134,16 @@ public class ProxyPool {
         }
     }
 
+    /**
+     * 所有代理状态
+     */
     public void allProxyStatus() {
         String re = "all proxy info >>>> \n";
         for (HttpProxy httpProxy : idleQueue) {
             re += httpProxy.toString() + "\n";
-
         }
         System.out.print(re);
-//        logger.info(re);
+        log.info(re);
     }
 
     /**

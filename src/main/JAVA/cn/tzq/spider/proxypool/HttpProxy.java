@@ -68,7 +68,7 @@ public class HttpProxy implements Delayed {
             socket.connect(proxy.address(), 3000);
             isReachable = true;
         } catch (Exception e) {
-            //logger.error("bad proxy >>>" + this.proxy.toString());
+            log.error("bad proxy >>>" + this.proxy.toString());
         } finally {
             if (socket != null) {
                 try {
