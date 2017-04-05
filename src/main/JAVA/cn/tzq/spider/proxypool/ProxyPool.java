@@ -31,7 +31,7 @@ public class ProxyPool {
     public ProxyPool(RedisTemplateUtils redisTemplateUtils) {
         this.redisTemplateUtils = redisTemplateUtils;
         log.info("初始化代理！");
-        List<ProxyIp> proxyIps = this.redisTemplateUtils.range("ProxyIps", 0, 100, ProxyIp.class);
+        List<ProxyIp> proxyIps = this.redisTemplateUtils.range("ipproxy", 0, 100, ProxyIp.class);
         if (proxyIps != null && proxyIps.size() > 0) {
             proxyIps.forEach((p) -> add(p.getIp(), p.getPort()));
         }

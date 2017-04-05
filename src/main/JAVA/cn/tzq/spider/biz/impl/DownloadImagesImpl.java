@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -56,27 +57,31 @@ public class DownloadImagesImpl implements DownloadImages {
 
     @Override
     public void downloadPicture() throws InterruptedException {
-        // 1获取最新的100条数据
-        Page<BeautyGirls> beautyGirlslist = this.beautyGirlService.findbeautygirls(100);
-        // 2按照主题分组
-        imagemap = beautyGirlslist.getContent().stream().distinct().collect(Collectors.groupingBy(BeautyGirls::getImageTheme));
-        // 3 多线程下载
-        final CountDownLatch countDownLatch = new CountDownLatch(imagemap.size());
-        imagemap.forEach((key, imagelist) -> {
-            try {
-                imagelist = imagelist.stream().distinct().collect(Collectors.toList());
-                ImageDownTask tmageDownTask = applicationContextProvider.getBean(ImageDownTask.class);
-                tmageDownTask.setImageList(imagelist);
-                tmageDownTask.setCountDownLatch(countDownLatch);
-                tmageDownTask.setImageTheme(key);
-//                new ImageDownTask(key, imagelist, countDownLatch, beautyGirlService, this.proxyPool, this.redisTemplateUtils)
-                taskExecutor.execute(tmageDownTask);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-        System.out.println("主线程开始等待...");
-        countDownLatch.await();
-        System.out.printf("所有线程执行完毕！");
+        while (true) {
+            // 1获取最新的100条数据
+            Page<BeautyGirls> beautyGirlslist = this.beautyGirlService.findbeautygirls(100);
+            // 2按照主题分组
+            imagemap = beautyGirlslist.getContent().stream().distinct().collect(Collectors.groupingBy(BeautyGirls::getImageTheme));
+            // 3 多线程下载
+            final CountDownLatch countDownLatch = new CountDownLatch(imagemap.size());
+            imagemap.forEach((key, imagelist) -> {
+                try {
+                    System.out.println(String.format("线程池corePoolSize：%d,maximumPoolSize:%d,keepAliveTime:%d,workQueueSize:%d,",
+                            taskExecutor.getCorePoolSize(), taskExecutor.getMaxPoolSize(), taskExecutor.getKeepAliveSeconds(), taskExecutor.getActiveCount()));
+                    imagelist = imagelist.stream().distinct().collect(Collectors.toList());
+                    ImageDownTask tmageDownTask = applicationContextProvider.getBean(ImageDownTask.class);
+                    tmageDownTask.setImageList(imagelist);
+                    tmageDownTask.setCountDownLatch(countDownLatch);
+                    tmageDownTask.setImageTheme(key);
+                    tmageDownTask.setHttpproxy(proxyPool.borrow());
+                    taskExecutor.execute(tmageDownTask);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            System.out.println("主线程开始等待...");
+            countDownLatch.await(5, TimeUnit.MINUTES);
+            System.out.printf("所有线程执行完毕！");
+        }
     }
 }

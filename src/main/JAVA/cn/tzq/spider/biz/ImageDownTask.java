@@ -48,21 +48,14 @@ public class ImageDownTask implements Runnable {
 
     private RedisTemplateUtils redisTemplateUtils;
 
-    private ProxyPool proxyPool;
+    private HttpProxy httpproxy;
 
     /**
      * 构造函数
-     *
-     * @param imageTheme 主题
-     * @param imageList  图片列表
      */
     @Autowired
-    public ImageDownTask(BeautyGirlService beautyGirlService, ProxyPool proxyPool, RedisTemplateUtils redisTemplateUtils) {
-//        this.imageTheme = imageTheme;
-//        this.imageList = imageList;
-//        this.countDownLatch = countDownLatch;
+    public ImageDownTask(BeautyGirlService beautyGirlService, RedisTemplateUtils redisTemplateUtils) {
         this.beautyGirlService = beautyGirlService;
-        this.proxyPool = proxyPool;
         this.redisTemplateUtils = redisTemplateUtils;
     }
 
@@ -79,31 +72,40 @@ public class ImageDownTask implements Runnable {
      */
     @Override
     public void run() {
-        System.out.printf("%s, 开始！", this.imageTheme);
-        this.imageList.forEach((imageurl) -> {
-            try {
-                DataInputStream dataInputStream = getImageInputStream(imageurl);
-                if (dataInputStream == null) {
-                    return;
+        System.out.println(String.format("%s, 开始！", this.imageTheme));
+        try {
+            this.imageList.forEach((imageurl) -> {
+                try {
+                    DataInputStream dataInputStream = getImageInputStream(imageurl);
+                    if (dataInputStream == null) {
+                        imageurl.setDownload(2);
+                        this.beautyGirlService.upDate(imageurl);
+                        return;
+                    }
+
+                    String imagePath = CreateFilePath(this.imageTheme, imageurl.getImageUrl());
+                    // 保存文件
+                    FileUtil.writeFileFromInputStream(dataInputStream, imagePath);
+                    dataInputStream.close();
+                    imageurl.setDownload(1);
+                    this.beautyGirlService.upDate(imageurl);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                String imagePath = CreateFilePath(this.imageTheme, imageurl.getImageUrl());
-                // 保存文件
-                FileUtil.writeFileFromInputStream(dataInputStream, imagePath);
-                dataInputStream.close();
-                imageurl.setDownload(1);
-                this.beautyGirlService.upDate(imageurl);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        System.out.printf("%s, 结束！", this.imageTheme);
-        this.countDownLatch.countDown();
+            });
+        }
+        finally {
+            this.countDownLatch.countDown();
+        }
+
+        System.out.println(String.format("%s, 结束！", this.imageTheme));
     }
 
     /**
      * 使用代理下载重试三次
+     *
      * @param beautyGirl
      * @return
      * @throws IOException
@@ -111,18 +113,14 @@ public class ImageDownTask implements Runnable {
     private DataInputStream getImageInputStream(BeautyGirls beautyGirl) {
 
         DataInputStream dataInputStream = null;
-        for (int i = 0; i < 3; ) {
-            try {
-                // 初始化proxy对象
-                HttpProxy httpproxy = this.proxyPool.borrow();
-                Long time = System.currentTimeMillis();
-                URL url = new URL(beautyGirl.getImageUrl());
-                URLConnection conn = url.openConnection(httpproxy.getProxy());
-                dataInputStream = new DataInputStream(conn.getInputStream());
-                break;
-            } catch (IOException ex) {
-                i++;
-            }
+        try {
+            // 初始化proxy对象
+            Long time = System.currentTimeMillis();
+            URL url = new URL(beautyGirl.getImageUrl());
+            URLConnection conn = url.openConnection(httpproxy.getProxy());
+            dataInputStream = new DataInputStream(conn.getInputStream());
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
 
         return dataInputStream;

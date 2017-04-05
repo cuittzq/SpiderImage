@@ -1,20 +1,11 @@
 package cn.tzq.spider;
 
-import cn.tzq.spider.biz.ApplicationContextProvider;
 import cn.tzq.spider.biz.DownloadImages;
+import cn.tzq.spider.util.RedisTemplateUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -25,35 +16,19 @@ public class Application extends SpringBootServletInitializer {
     public static void main(String[] args) {
         ApplicationContext ctx = SpringApplication.run(Application.class);
         DownloadImages downloadImages = (DownloadImages) ctx.getBean("downloadImages");
-
-        // run in a second
-        final long timeInterval = 1000 * 60 * 5;
-        Runnable runnable = new Runnable() {
-            public void run() {
-                while (true) {
-                    try {
-                        downloadImages.downloadPicture();
-                        Thread.sleep(timeInterval);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        Thread thread = new Thread(runnable);
-        thread.start();
+        try {
+            downloadImages.downloadPicture();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
-
-//    public static void main(String[] args) throws IOException {
-//        System.setProperty("http.maxRedirects", "50");
-//        System.getProperties().setProperty("proxySet", "true");
-//        String ip = "106.59.121.164";
-//        System.getProperties().setProperty("http.proxyHost", ip);
-//        System.getProperties().setProperty("http.proxyPort", "8998");
 //
-//        //确定代理是否设置成功
-//        String urlinfo = getHtml("http://www.ip138.com/ip2city.asp");
-//        System.out.println(urlinfo);
+//    public static void main(String[] args) {
+//        ApplicationContext ctx = SpringApplication.run(Application.class);
+////        DownloadImages downloadImages = (DownloadImages) ctx.getBean("downloadImages");
+//        RedisTemplateUtils redisTemplateUtils = (RedisTemplateUtils) ctx.getBean("redisTemplateUtils");
+//        redisTemplateUtils.set("hellokey", "123213123", 1000L);
+//        System.out.println(redisTemplateUtils.getObj("hellokey").toString());
 //    }
 //
 //    private static String getHtml(String address) {
