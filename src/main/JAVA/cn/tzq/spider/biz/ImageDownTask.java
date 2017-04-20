@@ -10,6 +10,7 @@ import com.sun.jndi.toolkit.ctx.Continuation;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -30,10 +31,11 @@ import java.util.concurrent.CountDownLatch;
  * @create 2017-03-27 16:07
  **/
 
-@Component("imageDownTask")
-@Scope("prototype")
+
 @Getter
 @Setter
+@Component("imageDownTask")
+@Scope("prototype")
 public class ImageDownTask implements Runnable {
 
     private List<BeautyGirls> imageList;
@@ -84,8 +86,10 @@ public class ImageDownTask implements Runnable {
                     }
 
                     String imagePath = CreateFilePath(this.imageTheme, imageurl.getImageUrl());
-                    // 保存文件
-                    FileUtil.writeFileFromInputStream(dataInputStream, imagePath);
+                    synchronized (imagePath) {
+                        // 保存文件
+                        FileUtil.writeFileFromInputStream(dataInputStream, imagePath);
+                    }
                     dataInputStream.close();
                     imageurl.setDownload(1);
                     this.beautyGirlService.upDate(imageurl);
@@ -95,8 +99,7 @@ public class ImageDownTask implements Runnable {
                     e.printStackTrace();
                 }
             });
-        }
-        finally {
+        } finally {
             this.countDownLatch.countDown();
         }
 
@@ -118,6 +121,7 @@ public class ImageDownTask implements Runnable {
             Long time = System.currentTimeMillis();
             URL url = new URL(beautyGirl.getImageUrl());
             URLConnection conn = url.openConnection(httpproxy.getProxy());
+            conn.setReadTimeout(10 * 1000);
             dataInputStream = new DataInputStream(conn.getInputStream());
         } catch (IOException ex) {
             ex.printStackTrace();

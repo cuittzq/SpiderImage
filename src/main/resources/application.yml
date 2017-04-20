@@ -19,7 +19,7 @@ spring:
 #          strategy: org.hibernate.cfg.ImprovedNamingStrategy
 #  org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
   redis:
-      host: 192.168.10.5
+      host: 192.168.10.10
       port: 6379
       password: 123456
       pool:
@@ -38,7 +38,7 @@ spring:
     scan: cn.tzq.facade
 
   threadPool:
-    maxThreads: 200
+    maxThreads: 128
     keepAliveSeconds: 30
     corePoolSize: 8
 

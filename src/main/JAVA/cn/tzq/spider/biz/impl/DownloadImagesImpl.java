@@ -49,6 +49,7 @@ public class DownloadImagesImpl implements DownloadImages {
     @Autowired
     public DownloadImagesImpl(ThreadPoolTaskExecutor taskExecutor, BeautyGirlService beautyGirlService, RedisTemplateUtils redisTemplateUtils, ProxyPool proxyPool, ApplicationContextProvider applicationContextProvider) {
         this.taskExecutor = taskExecutor;
+        this.taskExecutor.setAllowCoreThreadTimeOut(true);
         this.beautyGirlService = beautyGirlService;
         this.redisTemplateUtils = redisTemplateUtils;
         this.proxyPool = proxyPool;
@@ -81,6 +82,7 @@ public class DownloadImagesImpl implements DownloadImages {
             });
             System.out.println("主线程开始等待...");
             countDownLatch.await(5, TimeUnit.MINUTES);
+
             System.out.printf("所有线程执行完毕！");
         }
     }
