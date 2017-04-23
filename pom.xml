@@ -27,6 +27,8 @@
         <pagehelper.version>4.1.6</pagehelper.version>
         <dubbo-spring-boot>1.0.0</dubbo-spring-boot>
         <lombok.version>1.16.10</lombok.version>
+        <disruptor.version>[1.1.2,)</disruptor.version>
+        <reactor.version>1.0.0.RELEASE</reactor.version>
         <log4j.version>2.7</log4j.version>
     </properties>
     <dependencies>
@@ -131,6 +133,23 @@
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>${disruptor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectreactor</groupId>
+            <artifactId>reactor-spring</artifactId>
+            <version>${reactor.version}</version>
+        </dependency>
+
         <!-- Jackson json data bind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

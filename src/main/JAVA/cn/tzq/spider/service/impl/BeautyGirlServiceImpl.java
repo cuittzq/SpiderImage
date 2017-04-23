@@ -18,7 +18,6 @@ import java.util.List;
  * Created by tzq139 on 2017/3/22.
  */
 @Service("beautyGirlService")
-@Transactional
 public class BeautyGirlServiceImpl implements BeautyGirlService {
 
     private final BeautyGirlRepository beautyGirlRepository;

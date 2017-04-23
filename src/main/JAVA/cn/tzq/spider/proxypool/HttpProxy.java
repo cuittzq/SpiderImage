@@ -143,8 +143,12 @@ public class HttpProxy implements Delayed {
     }
 
     public Proxy getProxy() {
-        return  Proxy.NO_PROXY;
-       // return proxy;
+//        return  Proxy.NO_PROXY;
+        return proxy;
+    }
+
+    public Proxy getNoProxy() {
+        return Proxy.NO_PROXY;
     }
 
     public void setProxy(Proxy proxy) {

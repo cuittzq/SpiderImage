@@ -120,7 +120,7 @@ public class ImageDownTask implements Runnable {
             // 初始化proxy对象
             Long time = System.currentTimeMillis();
             URL url = new URL(beautyGirl.getImageUrl());
-            URLConnection conn = url.openConnection(httpproxy.getProxy());
+            URLConnection conn = url.openConnection(httpproxy.getNoProxy());
             conn.setReadTimeout(10 * 1000);
             dataInputStream = new DataInputStream(conn.getInputStream());
         } catch (IOException ex) {

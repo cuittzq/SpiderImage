@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,8 +20,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by zhiqiang on 2017/3/15.
  */
-@Service
-@Transactional
+@Component
 public class RedisTemplateUtils {
 
     private final RedisTemplate redisTemplate;
