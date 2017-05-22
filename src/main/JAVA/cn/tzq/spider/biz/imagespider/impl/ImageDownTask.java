@@ -1,4 +1,4 @@
-package cn.tzq.spider.biz;
+package cn.tzq.spider.biz.imagespider.impl;
 
 import cn.tzq.spider.model.BeautyGirls;
 import cn.tzq.spider.proxypool.HttpProxy;

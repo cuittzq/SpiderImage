@@ -1,14 +1,11 @@
-package cn.tzq.spider.biz.impl;
+package cn.tzq.spider.biz.imagespider;
 
-import cn.tzq.spider.biz.ImageDownHandle;
 import cn.tzq.spider.model.BeautyGirls;
 import cn.tzq.spider.model.ImageDownEvent;
 import cn.tzq.spider.proxypool.HttpProxy;
 import cn.tzq.spider.service.BeautyGirlService;
 import cn.tzq.spider.util.FileUtil;
-import cn.tzq.spider.util.RedisTemplateUtils;
-import org.springframework.stereotype.Component;
-import reactor.event.Event;
+import com.lmax.disruptor.WorkHandler;
 
 import javax.annotation.Resource;
 import java.io.DataInputStream;
@@ -18,45 +15,49 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
- * Created by tzq139 on 2017/4/23.
+ * Created by tzq139 on 2017/5/22.
  */
-@Component
-public class ImageDownHandleImpl implements ImageDownHandle {
+
+public class EventHandler implements WorkHandler<ImageDownEvent> {
+
 
     @Resource
     private BeautyGirlService beautyGirlService;
 
-    @Resource
-    private RedisTemplateUtils redisTemplateUtils;
-
     final String rootPath = "D:/Images";
 
-    @Override
-    public void Download(Event<ImageDownEvent> ev) {
+    public EventHandler(BeautyGirlService beautyGirlService) {
+        this.beautyGirlService = beautyGirlService;
+    }
 
-        System.out.println(String.format("%s, 开始！", ev.getData().getImageTheme()));
+
+    @Override
+    public void onEvent(ImageDownEvent imageDownEvent) throws Exception {
+
+
+        System.out.println(String.format("%s, 开始！", imageDownEvent.getImageTheme()));
         try {
-            ev.getData().getImageList().forEach((imageurl) -> {
+            imageDownEvent.getImageList().forEach((imageurl) -> {
                 try {
-                    DataInputStream dataInputStream = getImageInputStream(imageurl, ev.getData().getHttpproxy());
+                    DataInputStream dataInputStream = getImageInputStream(imageurl, imageDownEvent.getHttpproxy());
                     if (dataInputStream == null) {
                         imageurl.setDownload(2);
                         this.beautyGirlService.upDate(imageurl);
                         return;
                     }
 
-                    String imagePath = CreateFilePath(ev.getData().getImageTheme(), imageurl.getImageUrl());
+                    String imagePath = CreateFilePath(imageDownEvent.getImageTheme(), imageurl.getImageUrl());
                     synchronized (imagePath) {
                         // 保存文件
                         if (!FileUtil.writeFileFromInputStream(dataInputStream, imagePath)) {
-                            System.out.println(String.format("%s, 文件保存 失败！", ev.getData().getImageTheme()));
+                            System.out.println(String.format("%s, 文件保存 失败！", imageDownEvent.getImageTheme()));
                         }
                     }
                     dataInputStream.close();
                     imageurl.setDownload(1);
                     BeautyGirls savedBeautyGirls = this.beautyGirlService.upDate(imageurl);
                     if (savedBeautyGirls == null) {
-                        System.out.println(String.format("%s, 数据状态更新 失败！", ev.getData().getImageTheme()));
+                        System.out.println(String.format("%s, 数据状态更新 失败！", imageDownEvent.getImageTheme()));
                     }
 
                 } catch (MalformedURLException e) {
@@ -68,7 +69,7 @@ public class ImageDownHandleImpl implements ImageDownHandle {
         } finally {
         }
 
-        System.out.println(String.format("%s, 结束！", ev.getData().getImageTheme()));
+        System.out.println(String.format("%s, 结束！", imageDownEvent.getImageTheme()));
     }
 
 
@@ -86,8 +87,14 @@ public class ImageDownHandleImpl implements ImageDownHandle {
             // 初始化proxy对象
             Long time = System.currentTimeMillis();
             URL url = new URL(beautyGirl.getImageUrl());
-            URLConnection conn = url.openConnection(httpproxy.getNoProxy());
-            conn.setReadTimeout(10 * 1000);
+            URLConnection conn = null;
+            if (httpproxy == null) {
+                conn = url.openConnection();
+                conn.setReadTimeout(10 * 1000);
+            } else {
+                conn = url.openConnection(httpproxy.getProxy());
+            }
+
             dataInputStream = new DataInputStream(conn.getInputStream());
         } catch (IOException ex) {
             ex.printStackTrace();

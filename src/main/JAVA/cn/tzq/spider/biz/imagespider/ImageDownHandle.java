@@ -1,4 +1,4 @@
-package cn.tzq.spider.biz;
+package cn.tzq.spider.biz.imagespider;
 
 import cn.tzq.spider.model.ImageDownEvent;
 import reactor.event.Event;

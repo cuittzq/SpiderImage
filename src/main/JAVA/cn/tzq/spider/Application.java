@@ -1,7 +1,6 @@
 package cn.tzq.spider;
 
-import cn.tzq.spider.biz.DownloadImages;
-import cn.tzq.spider.util.RedisTemplateUtils;
+import cn.tzq.spider.biz.imagespider.DownloadImages;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.support.SpringBootServletInitializer;

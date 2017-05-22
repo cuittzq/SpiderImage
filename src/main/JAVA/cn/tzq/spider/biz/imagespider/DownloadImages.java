@@ -1,4 +1,4 @@
-package cn.tzq.spider.biz;
+package cn.tzq.spider.biz.imagespider;
 
 import java.util.List;
 import java.util.Map;
