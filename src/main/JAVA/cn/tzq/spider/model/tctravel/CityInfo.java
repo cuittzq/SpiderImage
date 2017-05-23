@@ -3,6 +3,7 @@ package cn.tzq.spider.model.tctravel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,7 +15,8 @@ import java.util.List;
  **/
 @Getter
 @Setter
-public class CityInfo {
+public class CityInfo implements Serializable {
+    private static final long serialVersionUID = 28269012843343L;
     /**
      * cityid : 36
      * cityname : 安庆

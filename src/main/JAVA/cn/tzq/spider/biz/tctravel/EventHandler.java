@@ -1,11 +1,14 @@
 package cn.tzq.spider.biz.tctravel;
 
 import cn.tzq.spider.model.tctravel.TcTravelBean;
+import cn.tzq.spider.util.RedisTemplateUtils;
 import cn.tzq.spider.util.http.Http;
 import com.alibaba.fastjson.JSONObject;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WorkHandler;
 import org.springframework.data.redis.core.RedisTemplate;
+
+import javax.annotation.Resource;
 
 /**
  * 功能描述：
@@ -22,8 +25,11 @@ public class EventHandler implements WorkHandler<ObjectEvent> {
 
     private Integer handerid;
 
-    public EventHandler(Integer handerid) {
+    private RedisTemplateUtils redisTemplateUtils;
+
+    public EventHandler(Integer handerid, RedisTemplateUtils redisTemplateUtils) {
         this.handerid = handerid;
+        this.redisTemplateUtils = redisTemplateUtils;
     }
 
     /**
@@ -43,14 +49,24 @@ public class EventHandler implements WorkHandler<ObjectEvent> {
                 TcTravelBean tctravelbean = JSONObject.parseObject(responces, TcTravelBean.class);
                 if (tctravelbean.getSceneryinfo() != null) {
                     total += tctravelbean.getSceneryinfo().size();
+                    String key = String.format("%s", event.getCityInfo().getCityid());
+
+                    tctravelbean.getSceneryinfo().forEach(p -> {
+                        try {
+                            redisTemplateUtils.leftPush(key, p);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InstantiationException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 }
                 if (tctravelbean.getSceneryinfo() != null && tctravelbean.getSceneryinfo().size() < pageSize) {
-                    System.out.printf("CityId:%d, 产品数 %d,\n", event.getScityId(), total);
+                    System.out.printf("%s,%s 产品数 %d,\n", event.getCityInfo().getCityname(), event.getKeyWorlds(), total);
                     break;
                 }
-
-
             }
+
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }

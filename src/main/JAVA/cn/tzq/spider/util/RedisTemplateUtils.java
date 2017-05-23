@@ -95,6 +95,15 @@ public class RedisTemplateUtils {
     }
 
 
+    /**
+     * @param key
+     * @param obj
+     * @return
+     */
+    public Long leftPush(String key, Object obj) throws IllegalAccessException, InstantiationException {
+       return redisTemplate.opsForList().leftPush(key, Gson.class.newInstance().toJson(obj));
+    }
+
     /* ----------- list --------- */
     public int size(String key) {
         return redisTemplate.opsForList().size(key).intValue();

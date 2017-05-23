@@ -3,6 +3,8 @@ package cn.tzq.spider.model.tctravel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * 功能描述：
  *
@@ -12,7 +14,8 @@ import lombok.Setter;
  **/
 @Getter
 @Setter
-public class ExtralabInfo {
+public class ExtralabInfo implements Serializable {
+    private static final long serialVersionUID = 23269012843343L;
     /**
      * labname : 铁定发班
      * labid : 169

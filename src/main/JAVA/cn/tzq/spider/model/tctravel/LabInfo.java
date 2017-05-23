@@ -3,6 +3,8 @@ package cn.tzq.spider.model.tctravel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * 功能描述：
  *
@@ -12,7 +14,8 @@ import lombok.Setter;
  **/
 @Getter
 @Setter
-public class LabInfo {
+public class LabInfo implements Serializable {
+    private static final long serialVersionUID = 2826191842L;
     /**
      * labname : 山岳
      * labid : 131

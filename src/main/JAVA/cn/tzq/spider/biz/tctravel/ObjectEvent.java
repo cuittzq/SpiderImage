@@ -1,5 +1,6 @@
 package cn.tzq.spider.biz.tctravel;
 
+import cn.tzq.spider.model.tctravel.CityInfo;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +22,7 @@ public class ObjectEvent {
     Integer days = 0;
 
     /**
-     *出发地参团（到达城市）
+     * 出发地参团（到达城市）
      */
     Integer endcityids = null;
     /**
@@ -34,4 +35,9 @@ public class ObjectEvent {
     Integer themeId = 0;
     Integer tourtype = 0;
     Integer SortType = 0;
+
+    /**
+     *
+     */
+    CityInfo cityInfo;
 }

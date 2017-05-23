@@ -3,6 +3,8 @@ package cn.tzq.spider.model.tctravel;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * 功能描述：
  *
@@ -12,7 +14,8 @@ import lombok.Setter;
  **/
 @Getter
 @Setter
-public class Station {
+public class Station implements Serializable {
+    private static final long serialVersionUID = 2826191843343L;
     /**
      * carPointId : 193
      * carPointName : 蜀风园大酒店
