@@ -43,7 +43,8 @@ public class disruptorImpl implements disruptordemo {
         int bufferSize = 1024;
         Disruptor<ObjectEvent> disruptor = new Disruptor<>(ObjectEvent::new, bufferSize, executor,
                 ProducerType.SINGLE, new LiteBlockingWaitStrategy());
-        disruptor.handleEventsWithWorkerPool(new EventHandler(0, redisTemplateUtils), new EventHandler(1, redisTemplateUtils),
+        disruptor.handleEventsWithWorkerPool(
+                new EventHandler(0, redisTemplateUtils), new EventHandler(1, redisTemplateUtils),
                 new EventHandler(2, redisTemplateUtils), new EventHandler(3, redisTemplateUtils));
         disruptor.start();
         produceEvents(disruptor);
