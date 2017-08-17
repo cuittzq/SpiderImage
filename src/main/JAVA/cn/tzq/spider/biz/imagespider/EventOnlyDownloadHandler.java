@@ -65,7 +65,6 @@ public class EventOnlyDownloadHandler implements WorkHandler<ImageDownEvent> {
      * @throws IOException
      */
     private DataInputStream getImageInputStream(BeautyGirls beautyGirl, HttpProxy httpproxy) {
-
         DataInputStream dataInputStream = null;
         try {
             // 初始化proxy对象
@@ -74,11 +73,12 @@ public class EventOnlyDownloadHandler implements WorkHandler<ImageDownEvent> {
             URLConnection conn = null;
             if (httpproxy == null) {
                 conn = url.openConnection();
-                conn.setConnectTimeout(3 * 1000);
+
             } else {
                 conn = url.openConnection(httpproxy.getProxy());
             }
 
+            conn.setConnectTimeout(3 * 1000);
             dataInputStream = new DataInputStream(conn.getInputStream());
         } catch (HttpException httpex) {
             System.out.println(String.format("%s, %s！", beautyGirl.getImageUrl(), httpex.getMessage()));
